@@ -496,11 +496,31 @@ handlers._checks.post = (data, callback) => {
 
 /**
  * Checks - get
- * Requried:
- * Optional
+ * Requried: checkId
+ * Optional: none
  */
 handlers._checks.get = (data, callback) => {
-
+  let id = typeof (data.queryStringObject.id) == 'string' && data.queryStringObject.id.trim().length == 20 ? data.queryStringObject.id.trim() : false;
+  if (id) {
+    _data.read('checks', id, (err, checkData) => {
+      if (!err && checkData) {
+        let token = typeof (data.headers.token) == 'string' ? data.headers.token : false;
+        handlers._tokens.verifyToken(token, checkData.userPhone, (tokenIsValid) => {
+          if (tokenIsValid) {
+            callback(200, checkData);
+          } else {
+            callback(403);
+          }
+        });
+      } else {
+        callback(404);
+      }
+    });
+  } else {
+    callback(400, {
+      'Error': 'Missing required field'
+    });
+  }
 };
 
 /**
