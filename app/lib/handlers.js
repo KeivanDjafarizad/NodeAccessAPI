@@ -78,7 +78,6 @@ handlers._users.post = (data, callback) => {
             if (!err) {
               callback(200);
             } else {
-              console.log(err);
               callback(500, {
                 'Error': 'Could not create new user'
               });
@@ -167,7 +166,6 @@ handlers._users.put = (data, callback) => {
                 if (!err) {
                   callback(200);
                 } else {
-                  console.log(err);
                   callback(500, {
                     'Error': 'Could not update the user info'
                   });
@@ -525,17 +523,77 @@ handlers._checks.get = (data, callback) => {
 
 /**
  * Checks - put
- * Requried:
- * Optional
+ * Requried: id
+ * Optional: protocol, url, method, sucessCodes, timeoutSeconds (one must be sent)
  */
 handlers._checks.put = (data, callback) => {
+  let id = typeof (data.payload.id) == 'string' && data.payload.id.trim().length == 20 ? data.payload.id.trim() : false;
+
+  let protocol = typeof (data.payload.protocol) == 'string' && ['https', 'http'].indexOf(data.payload.protocol) > -1 ? data.payload.protocol : false;
+  let method = typeof (data.payload.method) == 'string' && ['post', 'get', 'put', 'delete'].indexOf(data.payload.method) > -1 ? data.payload.method : false;
+  let url = typeof (data.payload.url) == 'string' && data.payload.url.trim().length > 0 ? data.payload.url.trim() : false;
+  let timeoutSeconds = typeof (data.payload.timeoutSeconds) == 'number' && data.payload.timeoutSeconds % 1 === 0 && data.payload.timeoutSeconds >= 1 && data.payload.timeoutSeconds <= 5 ? data.payload.timeoutSeconds : false;
+  let successCodes = typeof (data.payload.successCodes) == 'object' && data.payload.successCodes instanceof Array && data.payload.successCodes.length > 0 ? data.payload.successCodes : false;
+
+  if (id) {
+    if (protocol || url || method || successCodes || timeoutSeconds) {
+      _data.read('checks', id, (err, checkData) => {
+        if (!err && checkData) {
+          let token = typeof (data.headers.token) == 'string' ? data.headers.token : false;
+          handlers._tokens.verifyToken(token, checkData.userPhone, (tokenIsValid) => {
+            if (tokenIsValid) {
+              if (protocol) {
+                checkData.protocol = protocol;
+              }
+              if (url) {
+                checkData.url = url;
+              }
+              if (method) {
+                checkData.method = method;
+              }
+              if (successCodes) {
+                checkData.successCodes = successCodes;
+              }
+              if (timeoutSeconds) {
+                checkData.timeoutSeconds = timeoutSeconds;
+              }
+              _data.update('checks', id, checkData, (err) => {
+                if (!err) {
+                  callback(200);
+                } else {
+                  callback(500, {
+                    'Error': 'Could not update the check'
+                  });
+                }
+              });
+            } else {
+              callback(403);
+            }
+          });
+        } else {
+          callback(400, {
+            'Error': 'Check ID do not exist'
+          });
+        }
+      })
+    } else {
+      callback(400, {
+        'Error': 'Missing fields to update'
+      });
+    }
+  } else {
+    callback(400, {
+      'Error': 'Missing required field'
+    });
+  }
+
 
 };
 
 /**
  * Checks - delete
- * Requried:
- * Optional
+ * Requried: id
+ * Optional: none
  */
 handlers._checks.delete = (data, callback) => {
 
