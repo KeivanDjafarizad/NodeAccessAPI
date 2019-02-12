@@ -6,6 +6,7 @@
 // Dependencies
 const _data = require('./data');
 const helpers = require('./helpers');
+const config = require('./config');
 
 // Define handlers
 let handlers = {};
@@ -422,11 +423,11 @@ handlers._checks.post = (data, callback) => {
   let protocol = typeof (data.payload.protocol) == 'string' && ['https', 'http'].indexOf(data.payload.protocol) > -1 ? data.payload.protocol : false;
   let method = typeof (data.payload.method) == 'string' && ['post', 'get', 'put', 'delete'].indexOf(data.payload.method) > -1 ? data.payload.method : false;
   let url = typeof (data.payload.url) == 'string' && data.payload.url.trim().length > 0 ? data.payload.url.trim() : false;
-  let timeoutSeconds = typeof (data.payload.timeoutSeconds) == 'number' && data.payload.timeoutSeconds % 1 === 0 && data.payload.timeoutSeconds >= 1 && data.payload.timeoutSeconds <= 5 ? data.payload.timeoutSeconds.trim() : false;
-  let sucessCodes = typeof (data.payload.sucessCodes) == 'object' && data.payload.sucessCodes instanceof Array && data.payload.sucessCodes.length > 0 ? data.payload.sucessCodes : false;
+  let timeoutSeconds = typeof (data.payload.timeoutSeconds) == 'number' && data.payload.timeoutSeconds % 1 === 0 && data.payload.timeoutSeconds >= 1 && data.payload.timeoutSeconds <= 5 ? data.payload.timeoutSeconds : false;
+  let successCodes = typeof (data.payload.successCodes) == 'object' && data.payload.successCodes instanceof Array && data.payload.successCodes.length > 0 ? data.payload.successCodes : false;
 
-  if (protocol && url && method && timeoutSeconds && sucessCodes) {
-    let token = typeof (data.headers.token) === 'string' ? data.headers.toke : false;
+  if (protocol && url && method && timeoutSeconds && successCodes) {
+    let token = typeof (data.headers.token) == 'string' ? data.headers.token : false;
     _data.read('tokens', token, (err, tokenData) => {
       if (!err && tokenData) {
         let userPhone = tokenData.phone;
@@ -444,7 +445,7 @@ handlers._checks.post = (data, callback) => {
                 protocol,
                 url,
                 method,
-                sucessCodes,
+                successCodes,
                 timeoutSeconds
               };
               _data.create('checks', checkId, checkObject, (err) => {
@@ -475,11 +476,15 @@ handlers._checks.post = (data, callback) => {
               })
             }
           } else {
-            callback(403);
+            callback(403, {
+              'Error': 'Invalid data read on Users'
+            });
           }
         });
       } else {
-        callback(403);
+        callback(403, {
+          'Error': 'Invalid data read on Tokens'
+        });
       }
     });
   } else {
