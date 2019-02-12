@@ -429,7 +429,55 @@ handlers._checks.post = (data, callback) => {
     let token = typeof (data.headers.token) === 'string' ? data.headers.toke : false;
     _data.read('tokens', token, (err, tokenData) => {
       if (!err && tokenData) {
+        let userPhone = tokenData.phone;
 
+        _data.read('users', userPhone, (err, userData) => {
+          if (!err && userData) {
+            let userChecks = typeof (userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
+            if (userChecks.length < config.maxChecks) {
+              // Create random id for the check
+              let checkId = helpers.createRandomString(20);
+
+              let checkObject = {
+                id: checkId,
+                userPhone,
+                protocol,
+                url,
+                method,
+                sucessCodes,
+                timeoutSeconds
+              };
+              _data.create('checks', checkId, checkObject, (err) => {
+                if (!err) {
+                  // Add check Id to the user's object
+                  userData.checks = userChecks;
+                  userData.checks.push(checkId);
+
+                  //Save new user data
+                  _data.update('users', userPhone, userData, (err) => {
+                    if (!err) {
+                      callback(200, checkObject);
+                    } else {
+                      callback(500, {
+                        'Error': 'Could not update the user with the new check'
+                      });
+                    }
+                  });
+                } else {
+                  callback(500, {
+                    'Error': 'Could not create new check'
+                  });
+                }
+              });
+            } else {
+              callback(400, {
+                'Error': `The user already has the maximum number of checks, {${config.maxChecks}}`
+              })
+            }
+          } else {
+            callback(403);
+          }
+        });
       } else {
         callback(403);
       }
