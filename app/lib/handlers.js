@@ -197,7 +197,6 @@ handlers._users.put = (data, callback) => {
 
 // Users - delete
 // Required: phone
-// TODO: Delete any other data files associated with this user
 handlers._users.delete = (data, callback) => {
   // Check phone number valid
   let phone = typeof (data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 10 ? data.queryStringObject.phone.trim() : false;
@@ -206,11 +205,36 @@ handlers._users.delete = (data, callback) => {
   if (phone) {
     handlers._tokens.verifyToken(token, phone, (tokenIsValid) => {
       if (tokenIsValid) {
-        _data.read('users', phone, (err, data) => {
-          if (!err && data) {
+        console.log(phone);
+        _data.read('users', phone, (err, userData) => {
+          if (!err && userData) {
             _data.delete('users', phone, (err) => {
               if (!err) {
-                callback(200);
+                let userChecks = typeof (userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
+                let checksToDelete = userChecks.length;
+                if (checksToDelete > 0) {
+                  let checksDeleted = 0;
+                  let errorsInDelete = false;
+                  userChecks.forEach((checkId) => {
+                    _data.delete('checks', checkId, (err) => {
+                      if (err) {
+                        errorsInDelete = true;
+                      }
+                      checksDeleted++;
+                      if (checksDeleted === checksToDelete) {
+                        if (!errorsInDelete) {
+                          callback(200);
+                        } else {
+                          callback(500, {
+                            'Error': 'An error has occurred during the deletion of checks'
+                          })
+                        }
+                      }
+                    });
+                  });
+                } else {
+                  callback(200);
+                }
               } else {
                 callback(500, {
                   'Error': 'Could not delete specified user'
