@@ -11,3 +11,4 @@ In order to launch it properly, please read about the [HTTPS Setup](./https/conf
 - Using NodeJS own resources and getting to know Node environment better
 - The basics of a RESTful API from the bottom to the top
 - How to leverage modules to keep code clean in a NodeJS environment
+- Connect to an external API (Twilio in this case) to use third party services
