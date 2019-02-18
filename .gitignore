@@ -1,9 +1,9 @@
 /node_modules
 
-/app/https/*.pem
+/https/*.pem
 
-/app/.data/checks/*.json
-/app/.data/tokens/*.json
-/app/.data/users/*.json
+/.data/checks/*.json
+/.data/tokens/*.json
+/.data/users/*.json
 
-/twilio.json
+/twilio.txt

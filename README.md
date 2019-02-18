@@ -4,7 +4,7 @@ A RESTful API programmed in pure NodeJS without any db (data saved in json files
 
 ---
 
-In order to launch it properly, please read about the [HTTPS Setup](./app/https/configure.md)
+In order to launch it properly, please read about the [HTTPS Setup](./https/configure.md)
 
 ## What I learned
 
