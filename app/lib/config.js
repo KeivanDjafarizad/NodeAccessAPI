@@ -12,6 +12,11 @@ environments.staging = {
   envName: 'staging',
   hashingSecret: 'testSecretMate',
   maxChecks: 5,
+  twilio: {
+    accountSid: '',
+    authToken: '',
+    fromPhone: ''
+  }
 };
 
 // Production environment
@@ -21,6 +26,11 @@ environments.production = {
   envName: 'production',
   hashingSecret: 'testSecretMateDude',
   maxChecks: 5,
+  twilio: {
+    accountSid: '',
+    authToken: '',
+    fromPhone: ''
+  }
 };
 
 // Logic of export in CLI

@@ -5,3 +5,5 @@
 /app/.data/checks/*.json
 /app/.data/tokens/*.json
 /app/.data/users/*.json
+
+/twilio.json
